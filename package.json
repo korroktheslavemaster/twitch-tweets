@@ -12,7 +12,15 @@
   "dependencies": {
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
+    "irc": "^0.5.2",
     "mongoose": "^5.0.13",
-    "request-promise": "^4.2.2"
+    "oauth2orize": "^1.11.0",
+    "request-promise": "^4.2.2",
+    "sha1": "^1.1.1",
+    "simple-oauth2": "^1.5.2",
+    "tmi": "^2.0.0",
+    "tmi.js": "^1.2.1",
+    "twit": "^2.2.10",
+    "twit-promise": "^2.1.0"
   }
 }
