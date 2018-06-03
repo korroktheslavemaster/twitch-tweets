@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV != "production") {
+  require("dotenv").config();
+}
+
 var tmi = require("tmi.js");
 var mongoose = require("mongoose");
 var request = require("request-promise");
@@ -33,11 +37,11 @@ var getChannelNames = async cursor => {
     cursor: channels.pagination.cursor
   };
 };
+
 function countWords(str) {
   return str.trim().split(/\s+/).length;
 }
 
-// getChannelNames().then(d => console.log(d));
 var run = async () => {
   const { channel_names, cursor } = await getChannelNames();
   var client = new tmi.client({
@@ -61,13 +65,11 @@ var run = async () => {
       .limit(1)
       .exec();
     var bestMessage = bestMessages[0];
-    // max length 280 for twitter
-    var trimmedMessage = bestMessage.message.substring(0, 280);
     try {
-      var response = await tweet(trimmedMessage);
-      console.log(`tweeted: ${trimmedMessage}`);
+      var response = await tweet(bestMessage.message);
+      console.log(`tweeted: ${bestMessage.message}`);
     } catch (e) {
-      console.log(`tried message: ${trimmedMessage}`);
+      console.log(`tried message: ${bestMessage.message}`);
       console.log(`Could not tweet, error: ${e.message}`);
       // just assume that we are done with this message, mark it as tweeted...
     }
