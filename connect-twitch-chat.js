@@ -7,6 +7,7 @@ var mongoose = require("mongoose");
 var request = require("request-promise");
 var sha1 = require("sha1");
 var tweet = require("./twitter-bot");
+var moment = require("moment");
 
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
@@ -54,13 +55,20 @@ var run = async () => {
     },
     channels: channel_names.map(n => `#${n}`)
   });
-  var botNames = ["Nightbot", "Moobot", "mordecaiibot"];
+  var botNames = ["Nightbot", "Moobot", "mordecaiibot", "OutbreakBot"];
   var blacklistedChannels = ["#uzra"];
 
   var sendTweetAndReset = async () => {
     console.log("Sending tweet!!!");
-    // send a tweet
-    var bestMessages = await MessageCount.find({ tweeted: false })
+    // send a tweet. should not be already tweeted and update not older than 30 minutes
+    var bestMessages = await MessageCount.find({
+      tweeted: false,
+      lastUpdated: {
+        $gt: moment()
+          .add(-30, "minutes")
+          .toDate()
+      }
+    })
       .sort({ count: -1 })
       .limit(1)
       .exec();
@@ -79,9 +87,10 @@ var run = async () => {
     );
     // fetch top channels and connect to them
     if (client.readyState() == "OPEN") {
+      await client.disconnect();
       const { channel_names, cursor } = await getChannelNames();
       client.channels = channel_names.map(n => `#${n}`);
-      client.connect();
+      await client.connect();
     }
     return;
   };
@@ -108,6 +117,8 @@ var run = async () => {
         if (
           countWords(message) > 13 &&
           botNames.indexOf(username) <= -1 &&
+          // use substring search for bot
+          username.toLowerCase().indexOf("bot") <= -1 &&
           blacklistedChannels.indexOf(channel) <= -1
         ) {
           console.log(`(${channel})${username}: ${message}`);
