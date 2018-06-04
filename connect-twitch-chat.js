@@ -67,13 +67,14 @@ var run = async () => {
         break;
       case "chat":
         var username = userstate["display-name"];
+        message = message.trim();
         if (
           countWords(message) > 13 &&
           botNames.indexOf(username) <= -1 &&
           // use substring search for bot
           username.toLowerCase().indexOf("bot") <= -1 &&
           blacklistedChannels.indexOf(channel) <= -1 &&
-          // hardcoded limit for entropy > 2.5; run test-entropy.js to figure out good values
+          // hardcoded limit for entropy > 2.5; run test-entropy.js to figure out a good value
           entropy(message) > 2.5
         ) {
           console.log(`(${channel})${username}: ${message}`);
