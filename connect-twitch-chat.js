@@ -6,8 +6,8 @@ var tmi = require("tmi.js");
 var mongoose = require("mongoose");
 var request = require("request-promise");
 var sha1 = require("sha1");
-var tweet = require("./twitter-bot");
 var moment = require("moment");
+var entropy = require("./entropy-calc");
 
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
@@ -16,7 +16,6 @@ mongoose.connect(
 var headers = {
   "Client-ID": "jrwaqxroacokn9bsgh6kjc6fl0pfwj"
 };
-var TwitchChatMessage = require("./twitchchatmessage");
 var MessageCount = require("./messagecount");
 
 var getChannelNames = async cursor => {
@@ -58,55 +57,9 @@ var run = async () => {
   var botNames = ["Nightbot", "Moobot", "mordecaiibot", "OutbreakBot"];
   var blacklistedChannels = ["#uzra"];
 
-  var sendTweetAndReset = async () => {
-    console.log("Sending tweet!!!");
-    // send a tweet. should not be already tweeted and update not older than 30 minutes
-    var bestMessages = await MessageCount.find({
-      tweeted: false,
-      lastUpdated: {
-        $gt: moment()
-          .add(-30, "minutes")
-          .toDate()
-      }
-    })
-      .sort({ count: -1 })
-      .limit(1)
-      .exec();
-    var bestMessage = bestMessages[0];
-    try {
-      var response = await tweet(bestMessage.message);
-      console.log(`tweeted: ${bestMessage.message}`);
-    } catch (e) {
-      console.log(`tried message: ${bestMessage.message}`);
-      console.log(`Could not tweet, error: ${e.message}`);
-      // just assume that we are done with this message, mark it as tweeted...
-    }
-    await MessageCount.findOneAndUpdate(
-      { _id: bestMessage._id },
-      { $set: { tweeted: true } }
-    );
-    // fetch top channels and connect to them
-    if (client.readyState() == "OPEN") {
-      await client.disconnect();
-      const { channel_names, cursor } = await getChannelNames();
-      client.channels = channel_names.map(n => `#${n}`);
-      await client.connect();
-    }
-    return;
-  };
-  // call once
-  await sendTweetAndReset();
-  setInterval(sendTweetAndReset, 1000 * 60 * 10);
-
   client.on("message", async function(channel, userstate, message, self) {
     // Don't listen to my own messages..
     if (self) return;
-    // await new TwitchChatMessage({
-    //   date: new Date(),
-    //   userstate,
-    //   message,
-    //   channel
-    // }).save();
     // Handle different message types..
     switch (userstate["message-type"]) {
       case "action":
@@ -119,7 +72,9 @@ var run = async () => {
           botNames.indexOf(username) <= -1 &&
           // use substring search for bot
           username.toLowerCase().indexOf("bot") <= -1 &&
-          blacklistedChannels.indexOf(channel) <= -1
+          blacklistedChannels.indexOf(channel) <= -1 &&
+          // hardcoded limit for entropy > 2.5; run test-entropy.js to figure out good values
+          entropy(message) > 2.5
         ) {
           console.log(`(${channel})${username}: ${message}`);
           var hash = sha1(message);
@@ -158,3 +113,6 @@ var run = async () => {
 
 // Connect the client to the server..
 run();
+
+// after 10 minutes kill yourself
+setTimeout(process.exit, 1000 * 60 * 10);
