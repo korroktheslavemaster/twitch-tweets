@@ -54,7 +54,13 @@ var run = async () => {
     },
     channels: channel_names.map(n => `#${n}`)
   });
-  var botNames = ["Nightbot", "Moobot", "mordecaiibot", "OutbreakBot"];
+  var botNames = [
+    "Nightbot",
+    "Moobot",
+    "mordecaiibot",
+    "OutbreakBot",
+    "StreamElements"
+  ];
   var blacklistedChannels = ["#uzra"];
 
   client.on("message", async function(channel, userstate, message, self) {
@@ -75,7 +81,9 @@ var run = async () => {
           username.toLowerCase().indexOf("bot") <= -1 &&
           blacklistedChannels.indexOf(channel) <= -1 &&
           // hardcoded limit for entropy > 2.5; run test-entropy.js to figure out a good value
-          entropy(message) > 2.5
+          entropy(message) > 2.5 &&
+          // shouldn't be a mod. that way bot messages can be filtered better hopefully
+          !userstate.mod
         ) {
           console.log(`(${channel})${username}: ${message}`);
           var hash = sha1(message);

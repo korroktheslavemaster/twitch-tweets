@@ -31,7 +31,8 @@ var sendTweet = async () => {
       console.log(`tweeted: ${bestMessage.message}`);
     } catch (e) {
       console.log(`tried message: ${bestMessage.message}`);
-      console.log(`Could not tweet, error: ${e.message}`);
+      // give whole error, might get to know error code of twitter?
+      console.log(`Could not tweet, error: ${JSON.stringify(e)}`);
       // just assume that we are done with this message, mark it as tweeted...
     }
     await MessageCount.findOneAndUpdate(
