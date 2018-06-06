@@ -8,6 +8,7 @@ var request = require("request-promise");
 var sha1 = require("sha1");
 var moment = require("moment");
 var entropy = require("./entropy-calc");
+var franc = require("franc");
 
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
@@ -65,6 +66,33 @@ var run = async () => {
     "RunescapeZIW"
   ];
   var blacklistedChannels = ["#uzra"];
+  // not using blacklisted languages, instead allowed languages. blacklisted list might be too big
+  // actually using blacklisted only
+  var blacklistedLanguages = [
+    "fra",
+    "spa",
+    "rus",
+    "kor",
+    "mkd",
+    "por",
+    "tgl",
+    "bcl",
+    "war",
+    "bul",
+    "hil",
+    "srp"
+  ];
+  var allowedLanguages = [
+    "eng",
+    "sco",
+    "afr",
+    "hat",
+    "dan",
+    "deu",
+    "tpi",
+    "mos",
+    "sot"
+  ];
 
   client.on("message", async function(channel, userstate, message, self) {
     // Don't listen to my own messages..
@@ -79,6 +107,7 @@ var run = async () => {
         message = message.trim();
         if (
           countWords(message) > 13 &&
+          // no bots
           botNames.indexOf(username) <= -1 &&
           // use substring search for bot
           username.toLowerCase().indexOf("bot") <= -1 &&
@@ -86,9 +115,11 @@ var run = async () => {
           // hardcoded limit for entropy > 2.5; run test-entropy.js to figure out a good value
           entropy(message) > 2.5 &&
           // shouldn't be a mod. that way bot messages can be filtered better hopefully
-          !userstate.mod
+          !userstate.mod &&
+          // also should be english
+          blacklistedLanguages.indexOf(franc(message)) == -1
         ) {
-          console.log(`(${channel})${username}: ${message}`);
+          console.log(`(${franc(message)})(${channel})${username}: ${message}`);
           var hash = sha1(message);
           var ret = await MessageCount.findByIdAndUpdate(
             hash,
@@ -127,4 +158,4 @@ var run = async () => {
 run();
 
 // after 10 minutes kill yourself
-setTimeout(process.exit, 1000 * 60 * 10);
+setTimeout(process.exit, 1000 * 60 * 30);
