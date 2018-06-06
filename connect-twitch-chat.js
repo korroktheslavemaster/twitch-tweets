@@ -83,7 +83,9 @@ var run = async () => {
     "war",
     "bul",
     "hil",
-    "srp"
+    "srp",
+    "ukr",
+    "wol"
   ];
   var allowedLanguages = [
     "eng",
