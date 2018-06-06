@@ -13,7 +13,7 @@ mongoose.connect(
 var MessageCount = require("../messagecount");
 
 var tweet =
-  "VoHiYo only real WEEB can build this perfect pyramid VoHiYo VoHiYo . Try like me !Try like me ! Try like me !! VoHiYo VoHiYo VoHiYo And my pyramid still higher!!!!!! VoHiYo VoHiYo VoHiYo VoHiYo";
+  "扛下去扛下去 欸 GivePLZ GivePLZ 扛下去扛下去 欸 TakeNRG TakeNRG 搖勒搖勒搖 阮是廟口男子漢 BloodTrail BloodTrail 咚猜 我在咚咚猜 GivePLZ GivePLZ 我帶你來鑽轎腳 TakeNRG TakeNRG GivePLZ GivePLZ 保恁身體健康 萬事平安 TakeNRG TakeNRG 發發發發發2";
 
 // var matchString = "So you're going by";
 (async () => {

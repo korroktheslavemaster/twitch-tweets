@@ -18,10 +18,11 @@ var headers = {
 };
 var MessageCount = require("./messagecount");
 
+// only get english language streams!
 var getChannelNames = async cursor => {
   var channels = await request({
     url: `https://api.twitch.tv/helix/streams?first=100${cursor
-      ? `&after=${cursor}`
+      ? `&after=${cursor}&language=en`
       : ""}`,
     headers
   });

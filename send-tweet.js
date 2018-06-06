@@ -29,6 +29,16 @@ var markTweeted = async ({ _id } = {}) => {
     : "";
 };
 
+var assertCustom = (op, message, code) => {
+  try {
+    assert(op);
+  } catch (e) {
+    var error = new Error(message);
+    error.code = code;
+    throw error;
+  }
+};
+
 var sendTweet = async () => {
   console.log("Sending tweet!!!");
   var tweeted = await MessageCount.find({
@@ -52,17 +62,18 @@ var sendTweet = async () => {
       assert(bestMessage);
       // mark it as good as tweeted.
       await markTweeted(bestMessage);
+
+      // check similarity to previous tweets
       const { ratings, bestMatch } = ss.findBestMatch(
         bestMessage.message,
         tweeted.map(t => t.message)
       );
-      if (bestMatch.rating > 0.7) {
-        var error = new Error(
-          `Too similar to: ${bestMatch.target}, similarity ${bestMatch.rating}`
-        );
-        error.code = 1000;
-        throw error;
-      }
+      assertCustom(
+        bestMatch.rating <= 0.7,
+        `Too similar to: ${bestMatch.target}, similarity ${bestMatch.rating}`,
+        1000
+      );
+
       var response = await tweet(bestMessage.message);
       console.log(`tweeted: ${bestMessage.message}`);
       break;
