@@ -9,7 +9,12 @@ var sha1 = require("sha1");
 var moment = require("moment");
 var entropy = require("./entropy-calc");
 var franc = require("franc");
-
+const {
+  botNames,
+  blacklistedChannels,
+  blacklistedLanguages,
+  allowedLanguages
+} = require("./constants");
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
 );
@@ -44,6 +49,21 @@ function countWords(str) {
   return str.trim().split(/\s+/).length;
 }
 
+// google translate to get language. hopefully not too expensive...
+var gcpGetLanguage = async message => {
+  var res = await request({
+    method: "POST",
+    uri: `https://translation.googleapis.com/language/translate/v2/detect?key=${process
+      .env.GOOGLE_TRANSLATE_API_KEY}`,
+    body: {
+      q: [message]
+    },
+    json: true
+  });
+  const { language } = res.data.detections[0][0];
+  return language;
+};
+
 var run = async () => {
   const { channel_names, cursor } = await getChannelNames();
   var client = new tmi.client({
@@ -59,45 +79,6 @@ var run = async () => {
     },
     channels: channel_names.map(n => `#${n}`)
   });
-  var botNames = [
-    "Nightbot",
-    "Moobot",
-    "mordecaiibot",
-    "OutbreakBot",
-    "StreamElements",
-    "RunescapePDZ",
-    "RunescapeZIW"
-  ];
-  var blacklistedChannels = ["#uzra"];
-  // not using blacklisted languages, instead allowed languages. blacklisted list might be too big
-  // actually using blacklisted only
-  var blacklistedLanguages = [
-    "fra",
-    "spa",
-    "rus",
-    "kor",
-    "mkd",
-    "por",
-    "tgl",
-    "bcl",
-    "war",
-    "bul",
-    "hil",
-    "srp",
-    "ukr",
-    "wol"
-  ];
-  var allowedLanguages = [
-    "eng",
-    "sco",
-    "afr",
-    "hat",
-    "dan",
-    "deu",
-    "tpi",
-    "mos",
-    "sot"
-  ];
 
   client.on("message", async function(channel, userstate, message, self) {
     // Don't listen to my own messages..
@@ -124,7 +105,9 @@ var run = async () => {
           // shouldn't be the broadcaster themselves
           username.toLowerCase() != channel.slice(1) &&
           // also should be english
-          blacklistedLanguages.indexOf(franc(message)) == -1
+          // blacklistedLanguages.indexOf(franc(message)) == -1
+          // use gcp
+          (await gcpGetLanguage(message)) == "en"
         ) {
           console.log(`(${franc(message)})(${channel})${username}: ${message}`);
           var hash = sha1(message);
