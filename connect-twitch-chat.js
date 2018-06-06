@@ -115,5 +115,5 @@ var run = async () => {
 // Connect the client to the server..
 run();
 
-// after 10 minutes kill yourself
-setTimeout(process.exit, 1000 * 60 * 10);
+// after 30 minutes kill yourself
+setTimeout(process.exit, 1000 * 60 * 30);
