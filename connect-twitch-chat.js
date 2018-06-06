@@ -59,7 +59,9 @@ var run = async () => {
     "Moobot",
     "mordecaiibot",
     "OutbreakBot",
-    "StreamElements"
+    "StreamElements",
+    "RunescapePDZ",
+    "RunescapeZIW"
   ];
   var blacklistedChannels = ["#uzra"];
 

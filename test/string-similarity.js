@@ -13,7 +13,7 @@ mongoose.connect(
 var MessageCount = require("../messagecount");
 
 var tweet =
-  "愛的魔力轉圈圈 TakeNRG MVGame 愛的魔力好尖尖 MVGame MorphinTime 愛的魔力轉Chin Chin MorphinTime KappaPride 廚爹的那隻感覺 KappaPride TTours 側錄的那種感覺 有點點危險 TTours 聊天室通通他媽轉起來等等我一個一個檢查";
+  "VoHiYo only real WEEB can build this perfect pyramid VoHiYo VoHiYo . Try like me !Try like me ! Try like me !! VoHiYo VoHiYo VoHiYo And my pyramid still higher!!!!!! VoHiYo VoHiYo VoHiYo VoHiYo";
 
 // var matchString = "So you're going by";
 (async () => {
