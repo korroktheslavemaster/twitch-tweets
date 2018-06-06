@@ -47,6 +47,9 @@ function countWords(str) {
 var run = async () => {
   const { channel_names, cursor } = await getChannelNames();
   var client = new tmi.client({
+    connection: {
+      reconnect: true
+    },
     options: {
       clientId: "jrwaqxroacokn9bsgh6kjc6fl0pfwj"
     },
