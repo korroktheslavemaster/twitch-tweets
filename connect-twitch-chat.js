@@ -116,6 +116,8 @@ var run = async () => {
           entropy(message) > 2.5 &&
           // shouldn't be a mod. that way bot messages can be filtered better hopefully
           !userstate.mod &&
+          // shouldn't be the broadcaster themselves
+          username.toLowerCase() != channel.slice(1) &&
           // also should be english
           blacklistedLanguages.indexOf(franc(message)) == -1
         ) {
