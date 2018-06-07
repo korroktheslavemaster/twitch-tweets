@@ -86,9 +86,11 @@ var sendTweet = async () => {
     console.log("nothing to tweet!");
     return;
   }
+  console.log("getting clusters...");
   var clusteredMessages = getClusters(candidates);
   // var clusteredMessages = require("/tmp/output.json");
 
+  console.log("trying clustesr...");
   for (var i = 0; i < clusteredMessages.length; i++) {
     try {
       const { canonicalMessage, ids, count } = clusteredMessages[i];
