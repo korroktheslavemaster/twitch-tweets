@@ -42,8 +42,8 @@ if len(data) == 0:
   print([])
   sys.exit(0)
 
-messages = [d['message'] for d in data]
-counts = [d['count'] for d in data]
+messages, counts, ids = zip(*[(d['message'], d['count'], d['_id']) for d in data])
+
 
 blockPrint()
 embeddings = getEmbeddings(messages)
@@ -53,14 +53,24 @@ n_clusters = int(len(messages)*0.8)
 kmeans = KMeans(n_clusters=n_clusters).fit(embeddings)
 
 labels = kmeans.labels_
+centerDistances = kmeans.transform(embeddings).transpose()
 finalDict = [[] for _ in range(n_clusters)]
+finalIds = [[] for _ in range(n_clusters)]
 finalCounts = [0] * n_clusters
+finalCanonicalStrings = []
 # print finalDict
 for i, label in enumerate(labels):
 #     print i, label
-    finalDict[label].append(messages[i])
-    finalCounts[label] += counts[i]
-countsAndMessages = zip(finalDict, finalCounts)
-countsAndMessages = sorted(countsAndMessages, key=lambda x: -x[1])
+  finalDict[label].append(messages[i])
+  finalIds[label].append(ids[i])
+  finalCounts[label] += counts[i]
+for i in range(n_clusters):
+  canonicalIdx = np.argmin(centerDistances[i])
+  finalCanonicalStrings.append(messages[canonicalIdx])
+countsAndMessages = zip(finalCounts, finalIds, finalCanonicalStrings)
+countsAndMessages = sorted(countsAndMessages, key=lambda x: -x[0])
+finalJson = [{'count': count, 'ids': ids, 'canonicalMessage': canonicalMessage } for count, ids, canonicalMessage in countsAndMessages]
 
-pprint(countsAndMessages[0])
+with open(sys.argv[2], 'w') as outfile:
+  json.dump(outfile, finalJson)
+# pprint(finalJson[0])
