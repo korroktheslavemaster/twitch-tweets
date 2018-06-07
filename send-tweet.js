@@ -125,7 +125,7 @@ var sendTweet = async () => {
       }
     }
   }
-  console.log("shouldn't be here if things were ok...");
+  // console.log("shouldn't be here if things were ok...");
   // while (true) {
   //   try {
   //     // send a tweet. should not be already tweeted and update not older than 30 minutes
