@@ -17,6 +17,16 @@ module_url = "https://tfhub.dev/google/universal-sentence-encoder/2" #@param ["h
 # Import the Universal Sentence Encoder's TF Hub module
 embed = hub.Module(module_url)
 tf.logging.set_verbosity(tf.logging.ERROR)
+
+# Disable
+def blockPrint():
+  sys.stdout = open(os.devnull, 'w')
+
+# Restore
+def enablePrint():
+  sys.stdout = sys.__stdout__
+
+
 def getEmbeddings(messages):
   with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as session:
     session.run([tf.global_variables_initializer(), tf.tables_initializer()])
@@ -35,7 +45,9 @@ if len(data) == 0:
 messages = [d['message'] for d in data]
 counts = [d['count'] for d in data]
 
+blockPrint()
 embeddings = getEmbeddings(messages)
+enablePrint()
 
 n_clusters = int(len(messages)*0.8)
 kmeans = KMeans(n_clusters=n_clusters).fit(embeddings)
