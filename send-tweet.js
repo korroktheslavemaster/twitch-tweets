@@ -19,6 +19,7 @@ mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
 );
 var MessageCount = require("./messagecount");
+var getClusters = require("./get-clusters");
 
 const recoverableErrorCodes = [
   // twitter codes
@@ -36,6 +37,14 @@ var markTweeted = async ({ _id } = {}) => {
         { $set: { tweeted: true } }
       ).exec()
     : "";
+};
+
+var markAllTweeted = async ids => {
+  return await Promise.all(
+    ids.map(_id =>
+      MessageCount.findOneAndUpdate({ _id }, { $set: { tweeted: true } }).exec()
+    )
+  );
 };
 
 var assertCustom = (op, message, code) => {
@@ -65,28 +74,29 @@ var sendTweet = async () => {
   var tweeted = await MessageCount.find({
     tweeted: true
   }).exec();
-  while (true) {
-    try {
-      // send a tweet. should not be already tweeted and update not older than 30 minutes
-      var bestMessages = await MessageCount.find({
-        tweeted: false,
-        lastUpdated: {
-          $gt: moment()
-            .add(-30, "minutes")
-            .toDate()
-        }
-      })
-        .sort({ count: -1 })
-        .limit(1)
-        .exec();
-      var bestMessage = bestMessages[0];
-      assert(bestMessage);
-      // mark it as good as tweeted.
-      await markTweeted(bestMessage);
+  var candidates = await MessageCount.find({
+    tweeted: false,
+    lastUpdated: {
+      $gt: moment()
+        .add(-30, "minutes")
+        .toDate()
+    }
+  });
+  if (candidates.length == 0) {
+    console.log("nothing to tweet!");
+    return;
+  }
+  var clusteredMessages = getClusters(candidates);
+  // var clusteredMessages = require("/tmp/output.json");
 
+  for (var i = 0; i < clusteredMessages.length; i++) {
+    try {
+      const { canonicalMessage, ids, count } = clusteredMessages[i];
+      // mark all as tweeted
+      await markAllTweeted(ids);
       // check similarity to previous tweets
       const { ratings, bestMatch } = ss.findBestMatch(
-        bestMessage.message,
+        canonicalMessage,
         tweeted.map(t => t.message)
       );
       assertCustom(
@@ -94,15 +104,15 @@ var sendTweet = async () => {
         `Too similar to: ${bestMatch.target}, similarity ${bestMatch.rating}`,
         1000
       );
-      var language = await getLanguage(bestMessage.message);
+      var language = await getLanguage(canonicalMessage);
       assertCustom(
         language == "en",
-        `Not english: ${bestMessage.message}, is ${language}`,
+        `Not english: ${canonicalMessage}, is ${language}`,
         1001
       );
 
-      var response = await tweet(bestMessage.message);
-      console.log(`tweeted: ${bestMessage.message}`);
+      var response = await tweet(canonicalMessage);
+      console.log(`tweeted: ${canonicalMessage} with count ${count}`);
       break;
     } catch (e) {
       console.log(e);
@@ -112,6 +122,53 @@ var sendTweet = async () => {
       }
     }
   }
+  // while (true) {
+  //   try {
+  //     // send a tweet. should not be already tweeted and update not older than 30 minutes
+  //     var bestMessages = await MessageCount.find({
+  //       tweeted: false,
+  //       lastUpdated: {
+  //         $gt: moment()
+  //           .add(-30, "minutes")
+  //           .toDate()
+  //       }
+  //     })
+  //       .sort({ count: -1 })
+  //       .limit(1)
+  //       .exec();
+  //     var bestMessage = bestMessages[0];
+  //     assert(bestMessage);
+  //     // mark it as good as tweeted.
+  //     await markTweeted(bestMessage);
+
+  //     // check similarity to previous tweets
+  //     const { ratings, bestMatch } = ss.findBestMatch(
+  //       bestMessage.message,
+  //       tweeted.map(t => t.message)
+  //     );
+  //     assertCustom(
+  //       bestMatch.rating <= 0.7,
+  //       `Too similar to: ${bestMatch.target}, similarity ${bestMatch.rating}`,
+  //       1000
+  //     );
+  //     var language = await getLanguage(bestMessage.message);
+  //     assertCustom(
+  //       language == "en",
+  //       `Not english: ${bestMessage.message}, is ${language}`,
+  //       1001
+  //     );
+
+  //     var response = await tweet(bestMessage.message);
+  //     console.log(`tweeted: ${bestMessage.message}`);
+  //     break;
+  //   } catch (e) {
+  //     console.log(e);
+  //     if (recoverableErrorCodes.indexOf(e.code) == -1) {
+  //       // can't tweet anything else now
+  //       break;
+  //     }
+  //   }
+  // }
   return;
 };
 
