@@ -2,6 +2,7 @@ if (process.env.NODE_ENV != "production") {
   require("dotenv").config();
 }
 
+var util = require("util");
 var tweet = require("./twitter-bot");
 var moment = require("moment");
 var ss = require("string-similarity");
