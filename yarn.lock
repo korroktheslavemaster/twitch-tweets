@@ -644,6 +644,12 @@ destroy@~1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"
 
+detectlanguage@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/detectlanguage/-/detectlanguage-1.2.2.tgz#4ae75f5eee174333610ba2186d4e252b47577335"
+  dependencies:
+    request "^2.53.0"
+
 dot-prop@^4.1.0, dot-prop@^4.1.1:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/dot-prop/-/dot-prop-4.2.0.tgz#1f19e0c2e1aa0e32797c49799f2837ac6af69c57"
@@ -2667,7 +2673,7 @@ request@2.74.0:
     tough-cookie "~2.3.0"
     tunnel-agent "~0.4.1"
 
-request@^2.68.0, request@^2.74.0, request@^2.79.0:
+request@^2.53.0, request@^2.68.0, request@^2.74.0, request@^2.79.0:
   version "2.87.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.87.0.tgz#32f00235cd08d482b4d0d68db93a829c0ed5756e"
   dependencies:

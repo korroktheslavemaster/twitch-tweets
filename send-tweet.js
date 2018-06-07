@@ -7,6 +7,13 @@ var moment = require("moment");
 var ss = require("string-similarity");
 var mongoose = require("mongoose");
 var assert = require("assert");
+var DetectLanguage = require("detectlanguage");
+var detectLanguage = new DetectLanguage({
+  key: process.env.DETECT_LANGUAGE_API_KEY,
+  ssl: true
+});
+const detect = util.promisify(detectLanguage.detect);
+
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
 );
@@ -17,7 +24,8 @@ const recoverableErrorCodes = [
   187 /* status is a duplicate */,
   186 /* tweet is too long */,
   // user codes
-  1000 /* tweet too similar */
+  1000 /* tweet too similar */,
+  1001 /* tweet not english */
 ];
 
 var markTweeted = async ({ _id } = {}) => {
@@ -37,6 +45,18 @@ var assertCustom = (op, message, code) => {
     error.code = code;
     throw error;
   }
+};
+
+// clustering:
+var getBestMessages = async candidates => {
+  // filter away 1 counts
+  var filtered = candidates.filter(({ count }) => count > 1);
+};
+
+const getLanguage = async message => {
+  var res = await detect(message);
+  if (!res.length) return "";
+  return res[0].language;
 };
 
 var sendTweet = async () => {
@@ -72,6 +92,12 @@ var sendTweet = async () => {
         bestMatch.rating <= 0.7,
         `Too similar to: ${bestMatch.target}, similarity ${bestMatch.rating}`,
         1000
+      );
+      var language = await getLanguage(bestMessage.message);
+      assertCustom(
+        language == "en",
+        `Not english: ${bestMessage.message}, is ${language}`,
+        1001
       );
 
       var response = await tweet(bestMessage.message);

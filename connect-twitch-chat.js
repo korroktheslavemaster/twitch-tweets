@@ -98,14 +98,14 @@ var run = async () => {
           // use substring search for bot
           username.toLowerCase().indexOf("bot") <= -1 &&
           blacklistedChannels.indexOf(channel) <= -1 &&
-          // hardcoded limit for entropy > 2.5; run test-entropy.js to figure out a good value
-          entropy(message) > 2.5 &&
+          // hardcoded limit for entropy > 2.1; run test/entropy.js to figure out a good value
+          entropy(message) > 2.1 &&
           // shouldn't be a mod. that way bot messages can be filtered better hopefully
           !userstate.mod &&
           // shouldn't be the broadcaster themselves
           username.toLowerCase() != channel.slice(1) &&
           // also should be english
-          blacklistedLanguages.indexOf(franc(message)) == -1
+          allowedLanguages.indexOf(franc(message)) != -1
           // use gcp
           // no too expensive...
           // (await gcpGetLanguage(message)) != "en"

@@ -27,15 +27,5 @@ module.exports = {
     "ukr",
     "wol"
   ],
-  allowedLanguages: [
-    "eng",
-    "sco",
-    "afr",
-    "hat",
-    "dan",
-    "deu",
-    "tpi",
-    "mos",
-    "sot"
-  ]
+  allowedLanguages: ["eng", "sco", "hat", "dan", "deu", "tpi", "mos", "sot"]
 };
