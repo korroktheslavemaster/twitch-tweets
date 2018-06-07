@@ -87,7 +87,7 @@ var sendTweet = async () => {
     return;
   }
   console.log("getting clusters...");
-  var clusteredMessages = getClusters(candidates);
+  var clusteredMessages = await getClusters(candidates);
   // var clusteredMessages = require("/tmp/output.json");
 
   console.log("trying clustesr...");
