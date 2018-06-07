@@ -92,6 +92,7 @@ var sendTweet = async () => {
 
   console.log("trying clustesr...");
   for (var i = 0; i < clusteredMessages.length; i++) {
+    console.log(`iter ${i}`);
     try {
       const { canonicalMessage, ids, count } = clusteredMessages[i];
       // mark all as tweeted
@@ -124,6 +125,7 @@ var sendTweet = async () => {
       }
     }
   }
+  console.log("shouldn't be here if things were ok...");
   // while (true) {
   //   try {
   //     // send a tweet. should not be already tweeted and update not older than 30 minutes
