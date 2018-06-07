@@ -105,9 +105,10 @@ var run = async () => {
           // shouldn't be the broadcaster themselves
           username.toLowerCase() != channel.slice(1) &&
           // also should be english
-          // blacklistedLanguages.indexOf(franc(message)) == -1
+          blacklistedLanguages.indexOf(franc(message)) == -1
           // use gcp
-          (await gcpGetLanguage(message)) == "en"
+          // no too expensive...
+          // (await gcpGetLanguage(message)) != "en"
         ) {
           console.log(`(${franc(message)})(${channel})${username}: ${message}`);
           var hash = sha1(message);
