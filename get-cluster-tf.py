@@ -72,5 +72,5 @@ countsAndMessages = sorted(countsAndMessages, key=lambda x: -x[0])
 finalJson = [{'count': count, 'ids': ids, 'canonicalMessage': canonicalMessage } for count, ids, canonicalMessage in countsAndMessages]
 
 with open(sys.argv[2], 'w') as outfile:
-  json.dump(outfile, finalJson)
+  json.dump(finalJson, outfile)
 # pprint(finalJson[0])
