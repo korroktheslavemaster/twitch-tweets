@@ -71,8 +71,14 @@ const getLanguage = async message => {
 
 var sendTweet = async () => {
   console.log("Sending tweet!!!");
+  // only compare to tweets in the last 24 hours
   var tweeted = await MessageCount.find({
-    tweeted: true
+    tweeted: true,
+    lastUpdate: {
+      $gt: moment()
+        .add(-24, "hours")
+        .toDate()
+    }
   }).exec();
   var candidates = await MessageCount.find({
     tweeted: false,
