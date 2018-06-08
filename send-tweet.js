@@ -74,7 +74,7 @@ var sendTweet = async () => {
   // only compare to tweets in the last 24 hours
   var tweeted = await MessageCount.find({
     tweeted: true,
-    lastUpdate: {
+    lastUpdated: {
       $gt: moment()
         .add(-24, "hours")
         .toDate()
