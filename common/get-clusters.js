@@ -11,7 +11,7 @@ module.exports = async messages => {
     "utf8"
   );
   require("child_process").execSync(
-    "python get-cluster-tf.py /tmp/messagecount-recent.json /tmp/output.json > /dev/null"
+    "python ./common/get-cluster-tf.py /tmp/messagecount-recent.json /tmp/output.json > /dev/null"
   );
   var clusters = require("/tmp/output.json");
   return clusters;

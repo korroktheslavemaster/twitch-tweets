@@ -59,6 +59,7 @@ finalIds = [[] for _ in range(n_clusters)]
 finalCounts = [0] * n_clusters
 finalCanonicalStrings = []
 finalChannels = []
+finalCanonicalIds = []
 # print finalDict
 for i, label in enumerate(labels):
 #     print i, label
@@ -68,10 +69,11 @@ for i, label in enumerate(labels):
 for i in range(n_clusters):
   canonicalIdx = np.argmin(centerDistances[i])
   finalCanonicalStrings.append(messages[canonicalIdx])
+  finalCanonicalIds.append(ids[canonicalIdx])
   finalChannels.append(channels[canonicalIdx])
-countsAndMessages = zip(finalCounts, finalIds, finalCanonicalStrings, finalChannels)
+countsAndMessages = zip(finalCounts, finalIds, finalCanonicalStrings, finalChannels, finalCanonicalIds)
 countsAndMessages = sorted(countsAndMessages, key=lambda x: -x[0])
-finalJson = [{'count': count, 'ids': ids, 'canonicalMessage': canonicalMessage, 'channel': channel } for count, ids, canonicalMessage, channel in countsAndMessages]
+finalJson = [{'count': count, 'ids': ids, 'canonicalMessage': canonicalMessage, 'channel': channel, 'canonicalId': canonicalId } for count, ids, canonicalMessage, channel, canonicalId in countsAndMessages]
 
 with open(sys.argv[2], 'w') as outfile:
   json.dump(finalJson, outfile)

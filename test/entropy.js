@@ -1,4 +1,4 @@
-var entropy = require("../entropy-calc");
+var entropy = require("../common/entropy-calc");
 var tweets = require("./test-tweets.json");
 
 var res = tweets.map(t => ({

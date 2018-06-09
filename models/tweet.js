@@ -6,7 +6,8 @@ var schema = new Schema({
   channel: String,
   date: Date,
   count: Number,
-  messagecount_id: { type: String, ref: "MessageCount" }
+  messagecount_id: { type: String, ref: "MessageCount" },
+  hasMention: Boolean
 });
 
 var Tweet = mongoose.model("Tweet", schema);

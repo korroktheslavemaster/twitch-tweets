@@ -5,10 +5,10 @@ var mongoose = require("mongoose");
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
 );
-var MessageCount = require("../messagecount");
+var MessageCount = require("../models/messagecount");
 var moment = require("moment");
 var fs = require("fs");
-var getClusters = require("../get-clusters");
+var getClusters = require("../common/get-clusters");
 // var messages = require("/tmp/messagecount-recent.json");
 
 // messages = messages.sort((a, b) => -a.count + b.count);

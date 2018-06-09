@@ -7,7 +7,7 @@ var mongoose = require("mongoose");
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
 );
-var MessageCount = require("./messagecount");
+var MessageCount = require("../models/messagecount");
 
 // delete all message that are older than one hour and not tweeted
 (async () => {

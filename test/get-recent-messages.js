@@ -6,7 +6,7 @@ var mongoose = require("mongoose");
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
 );
-var MessageCount = require("../messagecount");
+var MessageCount = require("../models/messagecount");
 var moment = require("moment");
 var fs = require("fs");
 

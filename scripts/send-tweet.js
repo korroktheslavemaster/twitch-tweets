@@ -3,7 +3,7 @@ if (process.env.NODE_ENV != "production") {
 }
 
 var util = require("util");
-var tweet = require("./twitter-bot");
+var tweet = require("../common/twitter-bot");
 var moment = require("moment");
 var ss = require("string-similarity");
 var mongoose = require("mongoose");
@@ -18,8 +18,10 @@ const detect = util.promisify(detectLanguage.detect);
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
 );
-var MessageCount = require("./messagecount");
-var getClusters = require("./get-clusters");
+var MessageCount = require("../models/messagecount");
+var Tweet = require("../models/tweet");
+var getClusters = require("../common/get-clusters");
+var getChannelTwitter = require("../common/get-channel-twitter");
 
 const recoverableErrorCodes = [
   // twitter codes
@@ -71,12 +73,12 @@ const getLanguage = async message => {
 
 var sendTweet = async () => {
   console.log("Sending tweet!!!");
-  // only compare to tweets in the last 24 hours
+  // only compare to tweets in the last 2 days
   var tweeted = await MessageCount.find({
     tweeted: true,
     lastUpdated: {
       $gt: moment()
-        .add(-24, "hours")
+        .add(-2, "days")
         .toDate()
     }
   }).exec();
@@ -92,7 +94,7 @@ var sendTweet = async () => {
     console.log("nothing to tweet!");
     return;
   }
-  console.log("getting clusters...");
+  console.log(`got ${candidates.length} candidates. getting clusters...`);
   var clusteredMessages = await getClusters(candidates);
   // var clusteredMessages = require("/tmp/output.json");
   if (clusteredMessages.length == 0) {
@@ -104,12 +106,18 @@ var sendTweet = async () => {
   for (var i = 0; i < clusteredMessages.length; i++) {
     console.log(`iter ${i}`);
     try {
-      const { canonicalMessage, ids, count } = clusteredMessages[i];
+      const {
+        canonicalMessage: message,
+        canonicalId: messagecount_id,
+        ids,
+        count,
+        channel
+      } = clusteredMessages[i];
       // mark all as tweeted
       await markAllTweeted(ids);
       // check similarity to previous tweets
       const { ratings, bestMatch } = ss.findBestMatch(
-        canonicalMessage,
+        message,
         tweeted.map(t => t.message)
       );
       assertCustom(
@@ -117,15 +125,43 @@ var sendTweet = async () => {
         `Too similar to: ${bestMatch.target}, similarity ${bestMatch.rating}`,
         1000
       );
-      var language = await getLanguage(canonicalMessage);
+      // check language
+      var language = await getLanguage(message);
       assertCustom(
         language == "en",
-        `Not english: ${canonicalMessage}, is ${language}`,
+        `Not english: ${message}, is ${language}`,
         1001
       );
+      // check if twitter handle can be added
+      var tweetMessage = message;
+      var hasMention = false;
+      var twitterHandle = await getChannelTwitter(channel);
+      if (twitterHandle) {
+        // check if tweets in last 48 hours had mention
+        var mentionedTweets = await Tweet.find({
+          channel,
+          hasMention: true,
+          date: { $gt: moment().add(-48, "hours") }
+        }).exec();
+        // probably should also add a filter for min count?
+        if (!mentionedTweets.length) {
+          tweetMessage = `@${twitterHandle} ${tweetMessage}`;
+          hasMention = true;
+        }
+      }
 
-      var response = await tweet(canonicalMessage);
-      console.log(`tweeted: ${canonicalMessage} with count ${count}`);
+      var response = await tweet(tweetMessage);
+      // write this to the actually tweeted collection
+      await new Tweet({
+        message: tweetMessage,
+        channel,
+        date: new Date(),
+        count,
+        messagecount_id,
+        hasMention
+      }).save();
+
+      console.log(`tweeted: ${tweetMessage} with count ${count}`);
       break;
     } catch (e) {
       console.log(e);
@@ -135,54 +171,6 @@ var sendTweet = async () => {
       }
     }
   }
-  // console.log("shouldn't be here if things were ok...");
-  // while (true) {
-  //   try {
-  //     // send a tweet. should not be already tweeted and update not older than 30 minutes
-  //     var bestMessages = await MessageCount.find({
-  //       tweeted: false,
-  //       lastUpdated: {
-  //         $gt: moment()
-  //           .add(-30, "minutes")
-  //           .toDate()
-  //       }
-  //     })
-  //       .sort({ count: -1 })
-  //       .limit(1)
-  //       .exec();
-  //     var bestMessage = bestMessages[0];
-  //     assert(bestMessage);
-  //     // mark it as good as tweeted.
-  //     await markTweeted(bestMessage);
-
-  //     // check similarity to previous tweets
-  //     const { ratings, bestMatch } = ss.findBestMatch(
-  //       bestMessage.message,
-  //       tweeted.map(t => t.message)
-  //     );
-  //     assertCustom(
-  //       bestMatch.rating <= 0.7,
-  //       `Too similar to: ${bestMatch.target}, similarity ${bestMatch.rating}`,
-  //       1000
-  //     );
-  //     var language = await getLanguage(bestMessage.message);
-  //     assertCustom(
-  //       language == "en",
-  //       `Not english: ${bestMessage.message}, is ${language}`,
-  //       1001
-  //     );
-
-  //     var response = await tweet(bestMessage.message);
-  //     console.log(`tweeted: ${bestMessage.message}`);
-  //     break;
-  //   } catch (e) {
-  //     console.log(e);
-  //     if (recoverableErrorCodes.indexOf(e.code) == -1) {
-  //       // can't tweet anything else now
-  //       break;
-  //     }
-  //   }
-  // }
   return;
 };
 

@@ -7,22 +7,22 @@ var mongoose = require("mongoose");
 var request = require("request-promise");
 var sha1 = require("sha1");
 var moment = require("moment");
-var entropy = require("./entropy-calc");
+var entropy = require("../common/entropy-calc");
 var franc = require("franc");
 const {
   botNames,
   blacklistedChannels,
   blacklistedLanguages,
   allowedLanguages
-} = require("./constants");
+} = require("../common/constants");
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/test-twitch-app"
 );
 // twitch auth headers
 var headers = {
-  "Client-ID": "jrwaqxroacokn9bsgh6kjc6fl0pfwj"
+  "Client-ID": process.env.TWITCH_CLIENT_ID
 };
-var MessageCount = require("./messagecount");
+var MessageCount = require("../models/messagecount");
 
 // only get english language streams!
 var getChannelNames = async cursor => {
@@ -71,11 +71,11 @@ var run = async () => {
       reconnect: true
     },
     options: {
-      clientId: "jrwaqxroacokn9bsgh6kjc6fl0pfwj"
+      clientId: process.env.TWITCH_CLIENT_ID
     },
     identity: {
-      username: "kektobiologist",
-      password: "oauth:oebqlz0d1ednv8d6ison38jj07mj0h"
+      username: process.env.TWITCH_CLIENT_USERNAME,
+      password: process.env.TWITCH_CLIENT_OAUTH
     },
     channels: channel_names.map(n => `#${n}`)
   });
