@@ -29,7 +29,8 @@ const recoverableErrorCodes = [
   186 /* tweet is too long */,
   // user codes
   1000 /* tweet too similar */,
-  1001 /* tweet not english */
+  1001 /* tweet not english */,
+  1002 /* has spammy @mentions, twitter doesn't like that */
 ];
 
 var markTweeted = async ({ _id } = {}) => {
@@ -69,6 +70,15 @@ const getLanguage = async message => {
   var res = await detect(message);
   if (!res.length) return "";
   return res[0].language;
+};
+
+var numSpammyMentions = message => {
+  var regex = /@([a-zA-z0-9_]*)/g;
+  count = 0;
+  while (regex.exec(message) != null) {
+    count += 1;
+  }
+  return count;
 };
 
 var sendTweet = async () => {
@@ -115,6 +125,13 @@ var sendTweet = async () => {
       } = clusteredMessages[i];
       // mark all as tweeted
       await markAllTweeted(ids);
+
+      // check if it has spammy @s
+      assertCustom(
+        numSpammyMentions(message) < 2,
+        `Too spammy, has lots of mentions: '${message}'`,
+        1002
+      );
       // check similarity to previous tweets
       const { ratings, bestMatch } = ss.findBestMatch(
         message,
@@ -122,21 +139,22 @@ var sendTweet = async () => {
       );
       assertCustom(
         bestMatch.rating <= 0.7,
-        `Too similar to: ${bestMatch.target}, similarity ${bestMatch.rating}`,
+        `Too similar to: '${bestMatch.target}', similarity ${bestMatch.rating}`,
         1000
       );
       // check language
       var language = await getLanguage(message);
       assertCustom(
         language == "en",
-        `Not english: ${message}, is ${language}`,
+        `Not english: '${message}', is ${language}`,
         1001
       );
       // check if twitter handle can be added
+      // also mention with a probability of 10%
       var tweetMessage = message;
       var hasMention = false;
       var twitterHandle = await getChannelTwitter(channel);
-      if (twitterHandle) {
+      if (twitterHandle && Math.random() < 0.1) {
         // check if tweets in last 48 hours had mention
         var mentionedTweets = await Tweet.find({
           channel,
@@ -161,10 +179,10 @@ var sendTweet = async () => {
         hasMention
       }).save();
 
-      console.log(`tweeted: ${tweetMessage} with count ${count}`);
+      console.log(`tweeted: '${tweetMessage}' with count ${count}`);
       break;
     } catch (e) {
-      console.log(e);
+      console.log(e.message);
       if (recoverableErrorCodes.indexOf(e.code) == -1) {
         // can't tweet anything else now
         break;
