@@ -20,6 +20,7 @@ mongoose.connect(
 );
 var MessageCount = require("../models/messagecount");
 var Tweet = require("../models/tweet");
+var TweetError = require("../models/tweeterror");
 var getClusters = require("../common/get-clusters");
 var getChannelTwitter = require("../common/get-channel-twitter");
 
@@ -150,11 +151,11 @@ var sendTweet = async () => {
         1001
       );
       // check if twitter handle can be added
-      // also mention with a probability of 10%
+      // also mention with a probability of 30%
       var tweetMessage = message;
       var hasMention = false;
       var twitterHandle = await getChannelTwitter(channel);
-      if (twitterHandle && Math.random() < 0.1) {
+      if (twitterHandle && Math.random() < 0.3) {
         // check if tweets in last 48 hours had mention
         var mentionedTweets = await Tweet.find({
           channel,
@@ -183,6 +184,11 @@ var sendTweet = async () => {
       break;
     } catch (e) {
       console.log(e.message);
+      await new TweetError({
+        ...e,
+        code: e.code.toString(),
+        date: new Date()
+      }).save();
       if (recoverableErrorCodes.indexOf(e.code) == -1) {
         // can't tweet anything else now
         break;
