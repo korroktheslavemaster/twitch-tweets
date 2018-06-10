@@ -61,12 +61,6 @@ var assertCustom = (op, message, code) => {
   }
 };
 
-// clustering:
-var getBestMessages = async candidates => {
-  // filter away 1 counts
-  var filtered = candidates.filter(({ count }) => count > 1);
-};
-
 const getLanguage = async message => {
   var res = await detect(message);
   if (!res.length) return "";
@@ -185,7 +179,7 @@ var sendTweet = async () => {
     } catch (e) {
       console.log(e.message);
       await new TweetError({
-        errorMessage: e.message,
+        message: e.message,
         stack: e.stack,
         code: e.code.toString(),
         date: new Date()
