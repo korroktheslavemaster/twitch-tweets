@@ -158,7 +158,7 @@ var sendTweet = async () => {
         }).exec();
         // probably should also add a filter for min count?
         if (!mentionedTweets.length) {
-          tweetMessage = `@${twitterHandle} ${tweetMessage}`;
+          tweetMessage = `- @${twitterHandle} ${tweetMessage}`;
           hasMention = true;
         }
       }
