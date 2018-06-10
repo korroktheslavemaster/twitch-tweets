@@ -185,7 +185,8 @@ var sendTweet = async () => {
     } catch (e) {
       console.log(e.message);
       await new TweetError({
-        ...e,
+        errorMessage: e.message,
+        stack: e.stack,
         code: e.code.toString(),
         date: new Date()
       }).save();
