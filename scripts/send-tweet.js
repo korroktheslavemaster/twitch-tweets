@@ -165,8 +165,8 @@ var sendTweet = async () => {
       // }
 
       // add hashtag with channel name
-      // prob 0.3
-      if (Math.random() < 0.3) tweetMessage = `- ${channel} ${tweetMessage}`;
+      // prob 0.05
+      if (Math.random() < 0.05) tweetMessage = `- ${channel} ${tweetMessage}`;
 
       var response = await tweet(tweetMessage);
       // write this to the actually tweeted collection
