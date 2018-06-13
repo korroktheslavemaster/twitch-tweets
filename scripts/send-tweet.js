@@ -149,20 +149,21 @@ var sendTweet = async () => {
       var tweetMessage = message;
       var hasMention = false;
       // don't bother with mentions
-      // var twitterHandle = await getChannelTwitter(channel);
-      // if (twitterHandle && Math.random() < 0.3) {
-      //   // check if tweets in last 48 hours had mention
-      //   var mentionedTweets = await Tweet.find({
-      //     channel,
-      //     hasMention: true,
-      //     date: { $gt: moment().add(-48, "hours") }
-      //   }).exec();
-      //   // probably should also add a filter for min count?
-      //   if (!mentionedTweets.length) {
-      //     tweetMessage = `- @${twitterHandle} ${tweetMessage}`;
-      //     hasMention = true;
-      //   }
-      // }
+      // actually make really small prob
+      var twitterHandle = await getChannelTwitter(channel);
+      if (twitterHandle && Math.random() < 0.05) {
+        // check if tweets in last 48 hours had mention
+        var mentionedTweets = await Tweet.find({
+          channel,
+          hasMention: true,
+          date: { $gt: moment().add(-48, "hours") }
+        }).exec();
+        // probably should also add a filter for min count?
+        if (!mentionedTweets.length) {
+          tweetMessage = `- @${twitterHandle} ${tweetMessage}`;
+          hasMention = true;
+        }
+      }
 
       // add hashtag with channel name
       // prob 0.05
